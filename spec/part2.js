@@ -89,7 +89,7 @@
       });
 
       it('fails for a collection of all-falsy values', function() {
-        expect(_.every([1, 2, undefined], _.identity)).to.be.false;
+        expect(_.every([null, undefined, undefined], _.identity)).to.be.false;
       });
 
       it('fails for a collection containing mixed falsy and truthy values', function() {

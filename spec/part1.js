@@ -469,9 +469,7 @@
         var orderTraversed = [];
 
         _.reduce([1, 2, 3, 4], function(memo, item) {
-          _.each(collection, function(item) {
-            orderTraversed.push(item);
-          });
+          orderTraversed.push(item);
           // Add a line here that makes this test pass
           // for a working implementation of reduce
           return memo;

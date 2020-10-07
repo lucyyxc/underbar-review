@@ -135,6 +135,11 @@
     // map() is a useful primitive iteration function that works a lot
     // like each(), but in addition to running the operation on all
     // the members, it also maintains an array of results.
+    var results = [];
+    _.each(collection, function(item) {
+      results.push(iterator(item));
+    });
+    return results;
   };
 
   /*
@@ -176,6 +181,19 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
+    if (accumulator === undefined) {
+      accumulator = _.first(collection);
+      collection = collection.slice(1);
+      _.each(collection, function(item) {
+        accumulator = iterator(accumulator, item);
+      });
+      return accumulator;
+    } else {
+      _.each(collection, function(item) {
+        accumulator = iterator(accumulator, item);
+      });
+      return accumulator;
+    }
   };
 
   // Determine if the array or object contains a given value (using `===`).
@@ -193,13 +211,30 @@
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
-    // TIP: Try re-using reduce() here.
+    iterator = iterator === undefined ? _.identity : iterator;
+    var bool = true;
+    _.each(collection, function(item) {
+      if (!iterator(item)) {
+        bool = false;
+        return bool;
+      }
+    });
+    return bool;
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    iterator = iterator === undefined ? _.identity : iterator;
+    var bool = false;
+    _.each(collection, function(item) {
+      if (iterator(item)) {
+        bool = true;
+        return bool;
+      }
+    });
+    return bool;
   };
 
 
@@ -222,11 +257,33 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    var args = Array.prototype.slice.call(arguments);
+
+    for (var i = 1; i < args.length; i++) {
+      var currentObj = args[i];
+      for (var key in currentObj) {
+        obj[key] = currentObj[key];
+      }
+    }
+
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    var args = Array.prototype.slice.call(arguments);
+
+    for (var i = 1; i < args.length; i++) {
+      var currentObj = args[i];
+      for (var key in currentObj) {
+        if (obj[key] === undefined) {
+          obj[key] = currentObj[key];
+        }
+      }
+    }
+
+    return obj;
   };
 
 
@@ -270,17 +327,27 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var cache = {};
+    return function() {
+      var args = Array.prototype.slice.call(arguments);
+      var key = JSON.stringify(args);
+      if (cache[key] === undefined) {
+        cache[key] = func.apply(this, args);
+      }
+      return cache[key];
+    };
   };
-
-  // Delays a function for the given number of milliseconds, and then calls
   // it with the arguments supplied.
   //
   // The arguments for the original function are passed after the wait
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var args = Array.prototype.slice.call(arguments, 2);
+    setInterval(function() {
+      func.apply(this, args);
+    }, wait);
   };
-
 
   /**
    * ADVANCED COLLECTION OPERATIONS
@@ -293,8 +360,13 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    var results = [];
+    _.each(array, function(item) {
+      var randomIndex = Math.floor(Math.random() * Math.floor(array.length));
+      results.splice(randomIndex, 0, item);
+    });
+    return results;
   };
-
 
   /**
    * ADVANCED
